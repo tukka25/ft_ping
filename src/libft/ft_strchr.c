@@ -14,11 +14,9 @@
 
 char	*ft_strchr(const char *s, int c)
 {
-	int		i;
 	char	*new_string;
 	char	tmp;
 
-	i = 0;
 	tmp = (char ) c;
 	while (*s != '\0')
 	{

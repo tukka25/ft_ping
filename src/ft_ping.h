@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <pcap.h>
+// #include <pcap.h>
 // #include <linux/if_packet.h>
 #include <net/ethernet.h>
 #include "./libft/libft.h"
@@ -17,7 +17,7 @@
 typedef struct s_ping
 {
 	char	**flags_options;
-	char	*ip;
+	char	*dest_ip;
 	char	*flag;
 }	t_ping;
 

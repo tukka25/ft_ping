@@ -33,7 +33,14 @@ SRCS = ft_memset.c		\
 	   ft_striteri.c	\
 	   ft_itoa.c		\
 	   ft_putendl_fd.c	\
-	   ft_strmapi.c
+	   ft_strmapi.c     \
+	   ft_startswith.c	\
+	   ft_darray_copy.c \
+	   ft_darray_len.c	\
+	   ft_isalnum.c		\
+	   ft_ispart.c		\
+
+
 
 
 		

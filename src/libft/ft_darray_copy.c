@@ -8,8 +8,9 @@ char **ft_darray_copy(char **src)
 	i = 0;
 	if (!src)
 		return NULL;
-	// printf("s = %s\n", src[0]);
 	ret = malloc((ft_darray_len(src) + 1) * sizeof(char *));
+	if (!ret)
+		return NULL;
 	while (src[i])
 	{
 		ret[i] = ft_strdup(src[i]);

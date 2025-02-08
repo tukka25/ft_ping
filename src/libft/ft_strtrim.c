@@ -29,11 +29,9 @@ static int	checker(char const *set, char c)
 static int	check_begining(char const *s1, char const *set)
 {
 	int	i;
-	int	j;
 	int	count2;
 
 	i = 0;
-	j = 0;
 	count2 = 0;
 	while (s1[i] != '\0')
 	{
@@ -49,11 +47,9 @@ static int	check_begining(char const *s1, char const *set)
 static int	check_end(char const *s1, char const *set)
 {
 	int	i;
-	int	j;
 	int	count1;
 
 	i = ft_strlen(s1) - 1;
-	j = 0;
 	count1 = 0;
 	while (i > 0)
 	{

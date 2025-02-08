@@ -17,12 +17,10 @@
 void	*ft_memmove(void *dst, const void *src, size_t len)
 {
 	size_t		i;
-	size_t		j;
 	char		*new_dst;
 	char		*new_src;
 
 	i = 0;
-	j = 0;
 	new_dst = (char *)dst;
 	new_src = (char *)src;
 	if (!src && !dst)
