@@ -41,7 +41,7 @@ SRCS = ft_memset.c		\
 	   ft_ispart.c		\
 
 
-
+HEADERS = libft.h
 
 		
 
@@ -64,8 +64,8 @@ CFLAGS = -Wall -Wextra -Werror
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	ar -rc $(NAME) $(OBJS)
+$(NAME): $(OBJS) $(HEADERS)
+	ar -rc $(NAME) $(OBJS) 
 
 clean:
 	rm -f $(OBJSB) $(OBJS)
