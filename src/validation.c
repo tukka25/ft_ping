@@ -8,7 +8,7 @@ void input_parsing(char **av, t_ping *ping)
 	if (flag_validation(av, ping) == 1)
 		error_handle(2, "Invalid flag");
 	if (ip_validation(av, ping) == 1)
-		error_handle(2, "Invalid ip");
+		error_handle(2, "Invalid IP Schema");
 	printf("OPTION --------------> %s\n", ping->flag);
 	// printf("IP ------------------> %s\n", ping->ip);
 }
@@ -52,6 +52,7 @@ int ip_validation(char **av, t_ping *ping)
 			return 1;
 		if (strcmp(ping->flag, av[counter]))
 		{
+			printf("res = %d\nresult = %s\n", strcmp(ping->flag, av[counter]), av[counter]);
 			ping->dest_ip = ft_strdup(av[counter]);
 			return 0;
 		}
