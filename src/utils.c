@@ -11,6 +11,8 @@ void setup(t_ping *ping)
 
 	ft_bzero(ping, sizeof(t_ping));
 	ping->flags_options = ft_darray_copy(s);
+	// ping->transmitted_packets = 0;
+	// ping->recieved_packets = 0;
 }
 
 /*
@@ -34,5 +36,5 @@ void error_handle(int fd, char *msg)
 	if (!msg)
 		exit(1);
 	printf("%s\n", msg);
-	exit(1);
+	exit(fd);
 }

@@ -17,8 +17,9 @@ OBJS = $(SRCS:.c=.o)
 
 all: $(NAME) $(NAME)
 
-$(NAME): $(OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+$(NAME): $(OBJS)
+	make -C src/libft/
+	sudo $(CC) $(CFLAGS) $(OBJS) src/libft/libft.a -o $(NAME)
 
 clean:
 	rm -f $(OBJS)
