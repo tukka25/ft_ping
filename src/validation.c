@@ -52,7 +52,6 @@ int ip_validation(char **av, t_ping *ping)
 			return 1;
 		if (strcmp(ping->flag, av[counter]))
 		{
-			printf("res = %d\nresult = %s\n", strcmp(ping->flag, av[counter]), av[counter]);
 			ping->dest_ip = ft_strdup(av[counter]);
 			return 0;
 		}
