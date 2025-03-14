@@ -83,6 +83,14 @@ float	get_maximum(t_ping *ping)
 	return max;
 }
 
+float	get_mdev(t_ping *ping)
+{
+	float mdev = 0;
+	for (int i = 0; i < ping->index; i++)
+		mdev += abs(ping->timings[i] - get_average(ping));
+	return (mdev / ping->index);
+}
+
 char *convert_domain_to_ip(char *domain, t_ping *ping)
 {
 	struct hostent* h;
