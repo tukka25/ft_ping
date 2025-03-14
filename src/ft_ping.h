@@ -41,15 +41,15 @@ typedef struct s_ping
 }	t_ping;
 
 
-void error_handle(int fd, char *msg);
-float get_minimum(t_ping *ping);
+void	error_handle(int fd, char *msg);
+float	get_minimum(t_ping *ping);
 float	get_maximum(t_ping *ping);
 float	get_average(t_ping *ping);
-void setup(t_ping *ping);
-void input_parsing(char **av, t_ping *ping);
-void print_usage();
-int flag_validation(char **av, t_ping *ping);
-int ip_validation(char **av, t_ping *ping);
-void packet_send(t_ping *ping);
+void	setup(t_ping *ping);
+void	input_parsing(char **av, t_ping *ping);
+void	print_usage();
+int		flag_validation(char **av, t_ping *ping);
+int		ip_validation(char **av, t_ping *ping);
+void	packet_send(t_ping *ping);
 
 #endif

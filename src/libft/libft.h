@@ -118,4 +118,6 @@ size_t	ft_darray_len(char **src);
 
 int		ft_ispart(char **darray, char *str);
 
+void	ft_darray_free(char **darray);
+
 #endif

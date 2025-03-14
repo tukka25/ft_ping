@@ -60,3 +60,8 @@ int ip_validation(char **av, t_ping *ping)
 	}
 	return 1;
 }
+
+float elapsed_time = ((((stop.tv_sec - start.tv_sec) * 1000) + (stop.tv_usec - start.tv_usec)) / 1000);
+
+
+(((stop.tv_sec * 1000) + stop.tv_usec) - ((start.tv_sec * 1000) + start.tv_usec)/ 1000)
