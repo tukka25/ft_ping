@@ -52,5 +52,5 @@ int		flag_validation(char **av, t_ping *ping);
 int		ip_validation(char **av, t_ping *ping);
 void	packet_send(t_ping *ping);
 char	*convert_domain_to_ip(char *domain, t_ping *ping);
-
+float	get_mdev(t_ping *ping);
 #endif
