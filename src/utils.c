@@ -12,7 +12,7 @@ void setup(t_ping *ping)
 	ft_bzero(ping, sizeof(t_ping));
 	ping->flags_options = ft_darray_copy(s);
 	if (!ping->flags_options)
-		error_handle(EXIT_FAILURE, "Error: Failed to copy flags options");
+		error_handle(EXIT_FAILURE, "Error: Failed to copy flags options", ping);
 }
 
 /*

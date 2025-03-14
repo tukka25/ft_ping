@@ -4,11 +4,11 @@
 void input_parsing(char **av, t_ping *ping)
 {
 	if (!av)
-		error_handle(STDERR_FILENO, "Invalid Parameters");
+		error_handle(STDERR_FILENO, "Invalid Parameters", ping);
 	if (flag_validation(av, ping) == 1)
-		error_handle(2, "Invalid flag");
+		error_handle(2, "Invalid flag", ping);
 	if (ip_validation(av, ping) == 1)
-		error_handle(2, "Invalid IP Schema");
+		error_handle(2, "Invalid IP Schema", ping);
 	printf("OPTION --------------> %s\n", ping->flag);
 	// printf("IP ------------------> %s\n", ping->ip);
 }
@@ -22,7 +22,7 @@ int flag_validation(char **av, t_ping *ping)
 
 	counter = 1;
 	if (!av)
-		error_handle(STDERR_FILENO, "Invalid Parameters");
+		error_handle(STDERR_FILENO, "Invalid Parameters", ping);
 	while (av[counter])
 	{
 		if (!*av[counter])
@@ -45,7 +45,7 @@ int ip_validation(char **av, t_ping *ping)
 
 	counter = 1;
 	if (!av)
-		error_handle(STDERR_FILENO, "Invalid Parameters");
+		error_handle(STDERR_FILENO, "Invalid Parameters", ping);
 	while (av[counter])
 	{
 		if (!*av[counter])
@@ -61,7 +61,7 @@ int ip_validation(char **av, t_ping *ping)
 	return 1;
 }
 
-float elapsed_time = ((((stop.tv_sec - start.tv_sec) * 1000) + (stop.tv_usec - start.tv_usec)) / 1000);
+// float elapsed_time = ((((stop.tv_sec - start.tv_sec) * 1000) + (stop.tv_usec - start.tv_usec)) / 1000);
 
 
-(((stop.tv_sec * 1000) + stop.tv_usec) - ((start.tv_sec * 1000) + start.tv_usec)/ 1000)
+// (((stop.tv_sec * 1000) + stop.tv_usec) - ((start.tv_sec * 1000) + start.tv_usec)/ 1000)

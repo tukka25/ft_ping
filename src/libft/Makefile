@@ -39,6 +39,7 @@ SRCS = ft_memset.c		\
 	   ft_darray_len.c	\
 	   ft_isalnum.c		\
 	   ft_ispart.c		\
+	   ft_darray_free.c \
 
 
 HEADERS = libft.h
