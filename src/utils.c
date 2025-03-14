@@ -31,16 +31,20 @@ void print_usage()
 /*
 The function prints %msg in %fd and exits incase of an error occurred.
 */
-void error_handle(int fd, char *msg, t_ping *ping)
+void error_handle(int status, char *msg, t_ping *ping)
 {
 	if (!msg)
-		exit(1);
-	if (fd >= 1)
-		printf("%s\n", msg);
+		exit(EXIT_FAILURE);
+	
+	if (status == EXIT_FAILURE)
+		fprintf(stderr, "%s\n", msg);
+	
+	// Clean up resources
 	ft_darray_free(ping->flags_options);
 	free(ping->flag);
 	free(ping->dest_ip);
-	exit(fd);
+	
+	exit(status);
 }
 
 float	get_minimum(t_ping *ping)

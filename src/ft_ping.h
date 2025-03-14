@@ -41,7 +41,7 @@ typedef struct s_ping
 }	t_ping;
 
 
-void	error_handle(int fd, char *msg, t_ping *ping);
+void	error_handle(int status, char *msg, t_ping *ping);
 float	get_minimum(t_ping *ping);
 float	get_maximum(t_ping *ping);
 float	get_average(t_ping *ping);

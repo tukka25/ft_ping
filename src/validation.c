@@ -4,11 +4,11 @@
 void input_parsing(char **av, t_ping *ping)
 {
 	if (!av)
-		error_handle(STDERR_FILENO, "Invalid Parameters", ping);
+		error_handle(EXIT_FAILURE, "Invalid Parameters", ping);
 	if (flag_validation(av, ping) == 1)
-		error_handle(2, "Invalid flag", ping);
+		error_handle(EXIT_FAILURE, "Invalid flag", ping);
 	if (ip_validation(av, ping) == 1)
-		error_handle(2, "Invalid IP Schema", ping);
+		error_handle(EXIT_FAILURE, "Invalid IP Schema", ping);
 	printf("OPTION --------------> %s\n", ping->flag);
 	// printf("IP ------------------> %s\n", ping->ip);
 }
@@ -22,7 +22,7 @@ int flag_validation(char **av, t_ping *ping)
 
 	counter = 1;
 	if (!av)
-		error_handle(STDERR_FILENO, "Invalid Parameters", ping);
+		error_handle(EXIT_FAILURE, "Invalid Parameters", ping);
 	while (av[counter])
 	{
 		if (!*av[counter])
@@ -45,7 +45,7 @@ int ip_validation(char **av, t_ping *ping)
 
 	counter = 1;
 	if (!av)
-		error_handle(STDERR_FILENO, "Invalid Parameters", ping);
+		error_handle(EXIT_FAILURE, "Invalid Parameters", ping);
 	while (av[counter])
 	{
 		if (!*av[counter])
