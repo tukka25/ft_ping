@@ -57,20 +57,20 @@ void packet_send(t_ping *ping)
 	struct timeval timeout;
 	char *buffer;
 
-	ip = malloc(sizeof(struct iphdr));
-	if (!ip)
-		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for ip", ping);
-	icmp = malloc(sizeof(struct icmphdr));
-	if (!icmp)
-		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for icmp", ping);
-	packet = malloc(sizeof(struct iphdr) + sizeof(struct icmphdr));
+	// ip = malloc(sizeof(struct iphdr));
+	// if (!ip)
+	// 	error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for ip", ping);
+	// icmp = malloc(sizeof(struct icmphdr));
+	// if (!icmp)
+	// 	error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for icmp", ping);
+	packet = calloc(1, sizeof(struct iphdr) + sizeof(struct icmphdr));
 	if (!packet)
 		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for packet", ping);
-	buffer = malloc((sizeof(struct iphdr) + sizeof(struct icmphdr)) + 1);
+	buffer = calloc(1, (sizeof(struct iphdr) + sizeof(struct icmphdr)) + 1);
 	if (!buffer)
 		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for buffer", ping);
 	ip = (struct iphdr*)packet;
-	icmp = (struct icmphdr*) (packet + sizeof(struct iphdr));
+	icmp = (struct icmphdr*)(packet + sizeof(struct iphdr));
 
 	/* IP conf */
 	struct timeval stop, start;
@@ -89,6 +89,7 @@ void packet_send(t_ping *ping)
 	icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
 
 	sockadd.sin_family = AF_INET;
+	sockadd.sin_port = 0;
 	sockadd.sin_addr.s_addr = inet_addr(convert_domain_to_ip(ping->dest_ip, ping));
 	int sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0)
@@ -100,6 +101,7 @@ void packet_send(t_ping *ping)
 	int yes = 1;
 
 	timeout.tv_sec = TIMEOUT;
+	timeout.tv_usec = 0;
 	int sockOpt = setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &yes, sizeof(yes));
 	if (sockOpt < 0)
 	{
@@ -116,7 +118,10 @@ void packet_send(t_ping *ping)
 		gettimeofday(&start, NULL);
 		int sendt = sendto(sockfd, packet, ip->tot_len, 0, (struct sockaddr *)&sockadd, sizeof(struct sockaddr));
 		if (sendt < 0)
+		{
 			printf("sendto() failed! Error: %s (errno: %d)\n", strerror(errno), errno);
+			exit(1);
+		}
 		else
 		{
 			ping->transmitted_packets += 1;
@@ -152,6 +157,9 @@ void packet_send(t_ping *ping)
 	free(ping->timings);
 	// free(ip);
 	// free(icmp);
-	// free(buffer);
-	// free(packet);
+	free(buffer);
+	free(packet);
+	close(sockfd);
+	error_handle(EXIT_SUCCESS, "", ping);
+	// free(ip);
 }

@@ -35,8 +35,11 @@ void error_handle(int fd, char *msg, t_ping *ping)
 {
 	if (!msg)
 		exit(1);
-	printf("%s\n", msg);
+	if (fd >= 1)
+		printf("%s\n", msg);
 	ft_darray_free(ping->flags_options);
+	free(ping->flag);
+	free(ping->dest_ip);
 	exit(fd);
 }
 
@@ -84,5 +87,12 @@ char *convert_domain_to_ip(char *domain, t_ping *ping)
 	snprintf(error_msg, sizeof(error_msg), "ft_ping: %s: Temporary failure in name resolution", domain);
 	if (!h)
 		error_handle(1, error_msg, ping);
+	// print the host IP address
+	// printf("Host name  : %s\n", h->h_name);
+	// // other names printing
+	// printf("h_len = %d\n", h->h_length);
+	// for (int i=0; h->h_addr_list[i] != NULL; i++)
+	// 	printf("Aliases %d : %s\n", i, inet_ntoa(*(struct in_addr *)h->h_addr_list[i]));
+	// printf("IP Address : %s\n", inet_ntoa(*(struct in_addr *)h->h_addr));
     return inet_ntoa(*(struct in_addr *)h->h_addr);
 }
