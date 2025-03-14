@@ -87,7 +87,7 @@ float	get_mdev(t_ping *ping)
 {
 	float mdev = 0;
 	for (int i = 0; i < ping->index; i++)
-		mdev += abs(ping->timings[i] - get_average(ping));
+		mdev += fabs(ping->timings[i] - get_average(ping));
 	return (mdev / ping->index);
 }
 

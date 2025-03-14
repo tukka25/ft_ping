@@ -153,7 +153,7 @@ void packet_send(t_ping *ping)
 
 	printf("\n--- %s ft_ping statistics ---\n", ping->dest_ip);
 	printf("%d packets transmitted, %d received, %0.4f%% packet loss, time %d\n", ping->transmitted_packets, ping->recieved_packets, loss_p, h);
-	printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms\n", get_minimum(ping), get_average(ping),get_maximum(ping), get_minimum(ping));
+	printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms\n", get_minimum(ping), get_average(ping),get_maximum(ping), get_mdev(ping));
 	free(ping->timings);
 	// free(ip);
 	// free(icmp);

@@ -3,6 +3,7 @@
 
 
 #include <stdio.h>
+#include <math.h>
 #include <sys/time.h>
 #include<signal.h>
 #include <sys/socket.h>
