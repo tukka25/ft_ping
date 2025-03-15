@@ -58,12 +58,7 @@ void packet_send(t_ping *ping)
 	char *buffer;
 	char *ip_rep;
 
-	// ip = malloc(sizeof(struct iphdr));
-	// if (!ip)
-	// 	error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for ip", ping);
-	// icmp = malloc(sizeof(struct icmphdr));
-	// if (!icmp)
-	// 	error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for icmp", ping);
+
 	packet = calloc(1, sizeof(struct iphdr) + sizeof(struct icmphdr));
 	if (!packet)
 		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for packet", ping);
@@ -99,7 +94,8 @@ void packet_send(t_ping *ping)
 		printf("Error file\n");
 		exit(1);
 	}
-	// printf("Socket created Successfully\n");
+	fprintf(stdout, "ping: sock4.fd: %d (socktype: SOCK_RAW), hints.ai_family: AF_UNSPEC\n", sockfd);
+	fprintf(stdout, "\nai->ai_family: AF_INET, ai->ai_canonname: '%s'\n", ping->dest_ip);
 	int yes = 1;
 
 	timeout.tv_sec = TIMEOUT;
