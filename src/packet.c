@@ -58,11 +58,12 @@ void packet_send(t_ping *ping)
 	char *buffer;
 	char *ip_rep;
 
-
-	packet = calloc(1, sizeof(struct iphdr) + sizeof(struct icmphdr));
+	// Change the packet size to include 56 bytes of data
+	size_t packet_size = sizeof(struct iphdr) + sizeof(struct icmphdr) + 56;  // 20 + 8 + 56 = 84 bytes
+	packet = calloc(1, packet_size);
 	if (!packet)
 		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for packet", ping);
-	buffer = calloc(1, (sizeof(struct iphdr) + sizeof(struct icmphdr)) + 1);
+	buffer = calloc(1, packet_size + 1);
 	if (!buffer)
 		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for buffer", ping);
 	ip = (struct iphdr*)packet;
@@ -72,7 +73,7 @@ void packet_send(t_ping *ping)
 	struct timeval stop, start;
 	struct timeval stop_total, start_total;
 	ip->version          = 4;
-	ip->tot_len          = sizeof(struct iphdr) + sizeof(struct icmphdr); // 20 + 8 = 28
+	ip->tot_len          = packet_size;
 	ip->ttl          	= 64; // to be set
 	ip->protocol     = IPPROTO_ICMP;
     ip->daddr            = inet_addr(ip_rep);
@@ -115,7 +116,7 @@ void packet_send(t_ping *ping)
 	while (is_running)
 	{
 		gettimeofday(&start, NULL);
-		int sendt = sendto(sockfd, packet, ip->tot_len, 0, (struct sockaddr *)&sockadd, sizeof(struct sockaddr));
+		int sendt = sendto(sockfd, packet, packet_size, 0, (struct sockaddr *)&sockadd, sizeof(struct sockaddr));
 		if (sendt < 0)
 		{
 			printf("sendto() failed! Error: %s (errno: %d)\n", strerror(errno), errno);
@@ -125,7 +126,7 @@ void packet_send(t_ping *ping)
 		{
 			ping->transmitted_packets += 1;
 			int addr_len = sizeof(sockadd);
-			int recv_f = recvfrom(sockfd, buffer, (sizeof(struct iphdr) + sizeof(struct icmphdr)), 0, (struct sockaddr *)&sockadd, (unsigned int * restrict)&addr_len);
+			int recv_f = recvfrom(sockfd, buffer, packet_size, 0, (struct sockaddr *)&sockadd, (unsigned int * restrict)&addr_len);
 			ip_reply = (struct iphdr*) buffer;
 			gettimeofday(&stop, NULL);
 			if (recv_f < 0)
