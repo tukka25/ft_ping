@@ -137,7 +137,7 @@ void packet_send(t_ping *ping)
 			{
 				float elapsed_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
 				ping->recieved_packets += 1;
-				printf("%d bytes from %s: icmp seq=%d ttl=%d time=%.1lf\n",  recv_f, ip_rep, seq, ip_reply->ttl, elapsed_time);
+				printf("%ld bytes from %s: icmp seq=%d ttl=%d time=%.1lf\n",  recv_f - sizeof(struct iphdr), ip_rep, seq, ip_reply->ttl, elapsed_time);
 				add_timing(elapsed_time, ping);
 			}
 			usleep(1000000);
