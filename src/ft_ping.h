@@ -33,10 +33,6 @@ extern int is_running;
 typedef struct s_ping
 {
 	char	**flags_options;
-	struct icmphdr* icmp;
-	struct iphdr* ip_reply;
-	struct iphdr* ip;
-	struct sockaddr_in sockadd;
 	char	*dest_ip;
 	float	*timings;
 	int		index;

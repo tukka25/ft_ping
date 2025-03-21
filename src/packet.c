@@ -49,7 +49,10 @@ void packet_send(t_ping *ping)
 	// PF_PACKET is a raw socket works in linux
 	/* IPPROTO_RAW is a protocol for raw socket to get and receive
 	instead od IPPROTO_IP that only send */
-	
+	struct icmphdr* icmp;
+	struct iphdr* ip_reply;
+	struct iphdr* ip;
+	struct sockaddr_in sockadd;
 	char *packet;
 	struct timeval timeout;
 	char *buffer;
@@ -63,34 +66,29 @@ void packet_send(t_ping *ping)
 	buffer = calloc(1, packet_size + 1);
 	if (!buffer)
 		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for buffer", ping);
-	
-	// Set up IP header pointer
-	ping->ip = (struct iphdr*)packet;
-	ping->icmp = (struct icmphdr*)(packet + sizeof(struct iphdr));
-
-	// Socket address setup
-	ping->sockadd.sin_family = AF_INET;
-	ping->sockadd.sin_port = 0;
-	ping->sockadd.sin_addr.s_addr = inet_addr(convert_domain_to_ip(ping->dest_ip, ping));
-
-	// IP header configuration
-	ping->ip->version = 4;
-	ping->ip->tot_len = packet_size;
-	ping->ip->ttl = 64;
-	ping->ip->protocol = IPPROTO_ICMP;
-	ping->ip->daddr = ping->sockadd.sin_addr.s_addr;
-	ping->ip->ihl = 5;
+	ip = (struct iphdr*)packet;
+	icmp = (struct icmphdr*)(packet + sizeof(struct iphdr));
+	ip_rep = convert_domain_to_ip(ping->dest_ip, ping);
+	/* IP conf */
+	struct timeval stop, start;
+	struct timeval stop_total, start_total;
+	ip->version          = 4;
+	ip->tot_len          = packet_size;
+	ip->ttl          	= 64; // to be set
+	ip->protocol     = IPPROTO_ICMP;
+    ip->daddr            = inet_addr(ip_rep);
+	ip->ihl 		= 5; // if we want to put extra headers like options or timestamp we should increase it. for now ==> 5 * 4
 
 	/** ICMP conf **/
-	ping->icmp->type           = ICMP_ECHO;
-    ping->icmp->code           = 0; // code 0 for echo request
-    ping->icmp->un.echo.id     = getpid();
-    ping->icmp->un.echo.sequence   = htons(1);
-	ping->icmp->checksum = calculate_checksum((unsigned short*)ping->icmp, sizeof(struct icmphdr));
+	icmp->type           = ICMP_ECHO;
+    icmp->code           = 0; // code 0 for echo request
+    icmp->un.echo.id     = getpid();
+    icmp->un.echo.sequence   = htons(1);
+	icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
 
-	ping->sockadd.sin_family = AF_INET;
-	ping->sockadd.sin_port = 0;
-	ping->sockadd.sin_addr.s_addr = inet_addr(ip_rep);
+	sockadd.sin_family = AF_INET;
+	sockadd.sin_port = 0;
+	sockadd.sin_addr.s_addr = inet_addr(ip_rep);
 	int sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0)
 	{
@@ -118,7 +116,7 @@ void packet_send(t_ping *ping)
 	while (is_running)
 	{
 		gettimeofday(&start, NULL);
-		int sendt = sendto(sockfd, packet, packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
+		int sendt = sendto(sockfd, packet, packet_size, 0, (struct sockaddr *)&sockadd, sizeof(struct sockaddr));
 		if (sendt < 0)
 		{
 			printf("sendto() failed! Error: %s (errno: %d)\n", strerror(errno), errno);
@@ -128,8 +126,8 @@ void packet_send(t_ping *ping)
 		{
 			ping->transmitted_packets += 1;
 			int addr_len = sizeof(sockadd);
-			int recv_f = recvfrom(sockfd, buffer, packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
-			ping->ip_reply = (struct iphdr*) buffer;
+			int recv_f = recvfrom(sockfd, buffer, packet_size, 0, (struct sockaddr *)&sockadd, (unsigned int * restrict)&addr_len);
+			ip_reply = (struct iphdr*) buffer;
 			gettimeofday(&stop, NULL);
 			if (recv_f < 0)
 			{
@@ -139,16 +137,16 @@ void packet_send(t_ping *ping)
 			{
 				float elapsed_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
 				ping->recieved_packets += 1;
-				printf("%ld bytes from %s: icmp seq=%d ttl=%d time=%.1lf\n",  recv_f - sizeof(struct iphdr), ip_rep, seq, ping->ip_reply->ttl, elapsed_time);
+				printf("%ld bytes from %s: icmp seq=%d ttl=%d time=%.1lf\n",  recv_f - sizeof(struct iphdr), ip_rep, seq, ip_reply->ttl, elapsed_time);
 				add_timing(elapsed_time, ping);
 			}
 			usleep(1000000);
 			
 		}
 		seq++;
-		ping->icmp->un.echo.sequence = htons(seq);
-		ping->icmp->checksum = 0;
-		ping->icmp->checksum = calculate_checksum((unsigned short*)ping->icmp, sizeof(struct icmphdr));
+		icmp->un.echo.sequence = htons(seq);
+		icmp->checksum = 0;
+		icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
 	}
 	gettimeofday(&stop_total, NULL);
 	int total_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
@@ -156,10 +154,15 @@ void packet_send(t_ping *ping)
 
 	printf("\n--- %s ft_ping statistics ---\n", ping->dest_ip);
 	printf("%d packets transmitted, %d received, %0.4f%% packet loss, time %d ms\n", ping->transmitted_packets, ping->recieved_packets, loss_p, total_time);
+	//64 bytes from fjr04s06-in-f14.1e100.net (142.250.181.46): icmp_seq=1 ttl=57 time=15.4 ms
+	// printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.1lf\n",  ping->transmitted_packets, ip_rep, seq, ip_reply->ttl, total_time);
 	printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms\n", get_minimum(ping), get_average(ping),get_maximum(ping), get_mdev(ping));
 	free(ping->timings);
+	// free(ip);
+	// free(icmp);
 	free(buffer);
 	free(packet);
 	close(sockfd);
 	error_handle(EXIT_SUCCESS, "", ping);
+	// free(ip);
 }
