@@ -30,6 +30,8 @@ int flag_validation(char **av, t_ping *ping)
 		if (ft_ispart(ping->flags_options, av[counter]) == 0)
 		{
 			ping->flag = ft_strdup(av[counter]);
+			if (!ping->flag)
+				error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for flag", ping);
 			return 0;
 		}
 		counter++;

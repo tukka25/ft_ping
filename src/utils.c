@@ -41,9 +41,10 @@ void error_handle(int status, char *msg, t_ping *ping)
 	
 	// Clean up resources
 	ft_darray_free(ping->flags_options);
-	free(ping->flag);
-	free(ping->dest_ip);
-	
+	if (ping->flag)
+		free(ping->flag);
+	if (ping->dest_ip)
+		free(ping->dest_ip);
 	exit(status);
 }
 
@@ -86,8 +87,9 @@ float	get_maximum(t_ping *ping)
 float	get_mdev(t_ping *ping)
 {
 	float mdev = 0;
+	float avg = get_average(ping);
 	for (int i = 0; i < ping->index; i++)
-		mdev += fabs(ping->timings[i] - get_average(ping));
+		mdev += fabs(ping->timings[i] - avg);
 	return (mdev / ping->index);
 }
 
