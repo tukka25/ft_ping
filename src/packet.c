@@ -37,10 +37,12 @@ void add_timing(float g, t_ping *ping)
 	ping->index++;
 }
 
-// void iphdr_config(struct iphdr* packet)
-// {
-
-// }
+void packet_failure(t_ping *ping, char *msg)
+{
+	free(ping->buffer);
+	free(ping->packet);
+	error_handle(EXIT_FAILURE, msg, ping);
+}
 
 // void icmp_config()
 
@@ -59,10 +61,10 @@ void packet_send(t_ping *ping)
 	size_t packet_size = sizeof(struct iphdr) + sizeof(struct icmphdr) + 56;  // 20 + 8 + 56 = 84 bytes
 	ping->packet = calloc(1, packet_size);
 	if (!ping->packet)
-		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for packet", ping);
+		packet_failure(ping, "Error: Failed to allocate memory for packet");
 	ping->buffer = calloc(1, packet_size + 1);
 	if (!ping->buffer)
-		error_handle(EXIT_FAILURE, "Error: Failed to allocate memory for buffer", ping);
+		packet_failure(ping, "Error: Failed to allocate memory for buffer");
 	ip = (struct iphdr*)ping->packet;
 	icmp = (struct icmphdr*)(ping->packet + sizeof(struct iphdr));
 	ping->ip_rep = convert_domain_to_ip(ping->dest_ip, ping);
@@ -102,11 +104,11 @@ void packet_send(t_ping *ping)
 	if (sockOpt < 0)
 	{
 		printf("Error setsockopt\n");
-		exit(1);
+		packet_failure(ping, "Error: Failed to set socket options");
 	}
 	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                 sizeof timeout) < 0)
-        herror("setsockopt failed\n");
+        packet_failure(ping, "Error: Failed to set socket options");
 	int seq = 1;
 	signal(SIGINT, handle_sigint);
 	gettimeofday(&start_total, NULL);
@@ -114,21 +116,23 @@ void packet_send(t_ping *ping)
 	{
 		gettimeofday(&start, NULL);
 		int sendt = sendto(sockfd, ping->packet, packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
+		printf("send_t = %d, errno = %d\n", sendt, errno);
 		if (sendt < 0)
 		{
 			printf("sendto() failed! Error: %s (errno: %d)\n", strerror(errno), errno);
-			exit(1);
+			break;
 		}
 		else
 		{
 			ping->transmitted_packets += 1;
 			int addr_len = sizeof(ping->sockadd);
 			int recv_f = recvfrom(sockfd, ping->buffer, packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
+			printf("recv_f = %d, errno = %d\n", recv_f, errno);
 			ip_reply = (struct iphdr*) ping->buffer;
 			gettimeofday(&stop, NULL);
 			if (recv_f < 0)
 			{
-				printf("Timeout!!!: The request exceeded 4 sec\n");
+				printf("From %s icmp_seq=%d Destination Host Unreachable\n", convert_domain_to_ip("localhost", ping), seq);
 			}
 			else
 			{

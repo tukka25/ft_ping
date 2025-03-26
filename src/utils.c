@@ -96,9 +96,11 @@ char *convert_domain_to_ip(char *domain, t_ping *ping)
 	struct hostent* h;
     h = gethostbyname(domain);
 	char error_msg[256];
-	snprintf(error_msg, sizeof(error_msg), "ft_ping: %s: Temporary failure in name resolution", domain);
 	if (!h)
-		error_handle(1, error_msg, ping);
+	{
+		snprintf(error_msg, sizeof(error_msg), "ft_ping: %s: Temporary failure in name resolution", domain);
+		packet_failure(ping, error_msg);
+	}
 	// print the host IP address
 	// printf("Host name  : %s\n", h->h_name);
 	// // other names printing

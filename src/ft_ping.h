@@ -34,6 +34,10 @@ typedef struct s_ping
 {
 	char	**flags_options;
 	char	*dest_ip;
+	char	*ip_rep;
+	char	*packet;
+	struct sockaddr_in sockadd;
+	char	*buffer;
 	float	*timings;
 	int		index;
 	char	*flag;
@@ -44,6 +48,7 @@ typedef struct s_ping
 
 void	error_handle(int status, char *msg, t_ping *ping);
 float	get_minimum(t_ping *ping);
+void	packet_failure(t_ping *ping, char *msg);
 float	get_maximum(t_ping *ping);
 float	get_average(t_ping *ping);
 void	setup(t_ping *ping);
