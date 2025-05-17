@@ -66,6 +66,8 @@ float	get_average(t_ping *ping)
 	float avg = 0;
 	for (int i = 0; i < ping->index; i++)
 		avg += ping->timings[i];
+	if (avg == 0)
+		return (0);
 	return (avg / ping->index);
 }
 
@@ -88,6 +90,8 @@ float	get_mdev(t_ping *ping)
 	float mdev = 0;
 	for (int i = 0; i < ping->index; i++)
 		mdev += fabs(ping->timings[i] - get_average(ping));
+	if (mdev == 0)
+		return (0);
 	return (mdev / ping->index);
 }
 

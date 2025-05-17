@@ -54,10 +54,10 @@ void packet_send(t_ping *ping)
 
 	// Change the packet size to include 56 bytes of data
 	size_t packet_size = sizeof(struct iphdr) + sizeof(struct icmphdr) + 56;  // 20 + 8 + 56 = 84 bytes
-	ping->packet = calloc(1, packet_size);
+	ping->packet = ft_calloc(1, packet_size);
 	if (!ping->packet)
 		packet_failure(ping, "Error: Failed to allocate memory for packet");
-	ping->buffer = calloc(1, packet_size + 1);
+	ping->buffer = ft_calloc(1, packet_size + 1);
 	if (!ping->buffer)
 		packet_failure(ping, "Error: Failed to allocate memory for buffer");
 	ip = (struct iphdr*)ping->packet;
@@ -120,11 +120,7 @@ void packet_send(t_ping *ping)
 			int recv_f = recvfrom(sockfd, ping->buffer, packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
 			ip_reply = (struct iphdr*) ping->buffer;
 			gettimeofday(&stop, NULL);
-			if (recv_f < 0)
-			{
-				printf("From %s icmp_seq=%d Destination Host Unreachable\n", convert_domain_to_ip("localhost", ping), seq);
-			}
-			else
+			if (recv_f > 0)
 			{
 				float elapsed_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
 				ping->recieved_packets += 1;
