@@ -109,25 +109,27 @@ void packet_send(t_ping *ping)
 	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                 sizeof timeout) < 0)
         packet_failure(ping, "Error: Failed to set socket options");
-	int seq = 1;
+	int seq = 0;
 	signal(SIGINT, handle_sigint);
 	gettimeofday(&start_total, NULL);
 	while (is_running)
 	{
 		gettimeofday(&start, NULL);
+		seq++;
 		int sendt = sendto(sockfd, ping->packet, packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
-		printf("send_t = %d, errno = %d\n", sendt, errno);
-		if (sendt < 0)
-		{
-			printf("sendto() failed! Error: %s (errno: %d)\n", strerror(errno), errno);
-			break;
-		}
-		else
+		// printf("send_t = %d, errno = %d\n", sendt, errno);
+		// if (sendt < 0)
+		// {
+		// 	// printf("sendto() failed! Error: %s (errno: %d)\n", strerror(errno), errno);
+		// 	// continue;
+		// }
+		// else
+		if (sendt > 0)
 		{
 			ping->transmitted_packets += 1;
 			int addr_len = sizeof(ping->sockadd);
 			int recv_f = recvfrom(sockfd, ping->buffer, packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
-			printf("recv_f = %d, errno = %d\n", recv_f, errno);
+			// printf("recv_f = %d, errno = %d\n", recv_f, errno);
 			ip_reply = (struct iphdr*) ping->buffer;
 			gettimeofday(&stop, NULL);
 			if (recv_f < 0)
@@ -141,10 +143,9 @@ void packet_send(t_ping *ping)
 				printf("%ld bytes from %s: icmp seq=%d ttl=%d time=%.1lf\n",  recv_f - sizeof(struct iphdr), ping->ip_rep, seq, ip_reply->ttl, elapsed_time);
 				add_timing(elapsed_time, ping);
 			}
-			usleep(1000000);
-			
 		}
-		seq++;
+		usleep(1000000);
+		
 		icmp->un.echo.sequence = htons(seq);
 		icmp->checksum = 0;
 		icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
