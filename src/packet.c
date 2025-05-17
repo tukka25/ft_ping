@@ -5,7 +5,7 @@ int is_running = 1;
 unsigned short calculate_checksum(unsigned short *icmp, int len)
 {
 	int sum = 0;
-	u_short *tmp_icmp = icmp; // int16
+	u_short *tmp_icmp = icmp;
 	uint16_t final = 0;
 	
 	while (len > 1)
@@ -15,13 +15,12 @@ unsigned short calculate_checksum(unsigned short *icmp, int len)
 	}
 	if (len != 0)
 		sum += *(uint8_t *)tmp_icmp;
-	// 32-bit sum is folded into 16 bits using an end-around carry method
+
 	while (sum >> 16)
 		sum = (sum & 0xffff) + (sum >> 16);
 	final = ~sum;
 	return final;
 }
-
 
 
 void handle_sigint(int sig)
@@ -44,13 +43,9 @@ void packet_failure(t_ping *ping, char *msg)
 	error_handle(EXIT_FAILURE, msg, ping);
 }
 
-// void icmp_config()
-
 void packet_send(t_ping *ping)
 {
-	// PF_PACKET is a raw socket works in linux
-	/* IPPROTO_RAW is a protocol for raw socket to get and receive
-	instead od IPPROTO_IP that only send */
+
 	struct icmphdr* icmp;
 	struct iphdr* ip_reply;
 	struct iphdr* ip;
@@ -73,14 +68,14 @@ void packet_send(t_ping *ping)
 	struct timeval stop_total, start_total;
 	ip->version          = 4;
 	ip->tot_len          = packet_size;
-	ip->ttl          	= 64; // to be set
+	ip->ttl          	= 64;
 	ip->protocol     = IPPROTO_ICMP;
     ip->daddr            = inet_addr(ping->ip_rep);
-	ip->ihl 		= 5; // if we want to put extra headers like options or timestamp we should increase it. for now ==> 5 * 4
+	ip->ihl 		= 5;
 
 	/** ICMP conf **/
 	icmp->type           = ICMP_ECHO;
-    icmp->code           = 0; // code 0 for echo request
+    icmp->code           = 0;
     icmp->un.echo.id     = getpid();
     icmp->un.echo.sequence   = htons(1);
 	icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
@@ -91,7 +86,7 @@ void packet_send(t_ping *ping)
 	int sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0)
 	{
-		printf("Error file\n");
+		printf("Error Initializing the Raw Socket\n");
 		exit(1);
 	}
 	fprintf(stdout, "ping: sock4.fd: %d (socktype: SOCK_RAW), hints.ai_family: AF_UNSPEC\n", sockfd);
@@ -117,19 +112,12 @@ void packet_send(t_ping *ping)
 		gettimeofday(&start, NULL);
 		seq++;
 		int sendt = sendto(sockfd, ping->packet, packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
-		// printf("send_t = %d, errno = %d\n", sendt, errno);
-		// if (sendt < 0)
-		// {
-		// 	// printf("sendto() failed! Error: %s (errno: %d)\n", strerror(errno), errno);
-		// 	// continue;
-		// }
-		// else
+
 		if (sendt > 0)
 		{
 			ping->transmitted_packets += 1;
 			int addr_len = sizeof(ping->sockadd);
 			int recv_f = recvfrom(sockfd, ping->buffer, packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
-			// printf("recv_f = %d, errno = %d\n", recv_f, errno);
 			ip_reply = (struct iphdr*) ping->buffer;
 			gettimeofday(&stop, NULL);
 			if (recv_f < 0)
@@ -156,8 +144,6 @@ void packet_send(t_ping *ping)
 
 	printf("\n--- %s ft_ping statistics ---\n", ping->dest_ip);
 	printf("%d packets transmitted, %d received, %0.4f%% packet loss, time %d ms\n", ping->transmitted_packets, ping->recieved_packets, loss_p, total_time);
-	//64 bytes from fjr04s06-in-f14.1e100.net (142.250.181.46): icmp_seq=1 ttl=57 time=15.4 ms
-	// printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.1lf\n",  ping->transmitted_packets, ip_rep, seq, ip_reply->ttl, total_time);
 	printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms\n", get_minimum(ping), get_average(ping),get_maximum(ping), get_mdev(ping));
 	free(ping->timings);
 	free(ping->buffer);

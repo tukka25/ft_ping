@@ -10,7 +10,6 @@ void input_parsing(char **av, t_ping *ping)
 	if (ip_validation(av, ping) == 1)
 		error_handle(EXIT_FAILURE, "Invalid IP Schema", ping);
 	printf("OPTION --------------> %s\n", ping->flag);
-	// printf("IP ------------------> %s\n", ping->ip);
 }
 
 /*
@@ -59,8 +58,3 @@ int ip_validation(char **av, t_ping *ping)
 	}
 	return 1;
 }
-
-// float elapsed_time = ((((stop.tv_sec - start.tv_sec) * 1000) + (stop.tv_usec - start.tv_usec)) / 1000);
-
-
-// (((stop.tv_sec * 1000) + stop.tv_usec) - ((start.tv_sec * 1000) + start.tv_usec)/ 1000)
