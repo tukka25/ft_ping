@@ -4,7 +4,7 @@ int main(int ac, char **av)
 {
 	t_ping ping;
 
-	if (ac == 3)
+	if (ac >= 2 && ac <= 3)
 	{
 		setup(&ping);
 		input_parsing(av, &ping);

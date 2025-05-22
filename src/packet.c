@@ -89,8 +89,10 @@ void packet_send(t_ping *ping)
 		printf("Error Initializing the Raw Socket\n");
 		exit(1);
 	}
-	fprintf(stdout, "ping: sock4.fd: %d (socktype: SOCK_RAW), hints.ai_family: AF_UNSPEC\n", sockfd);
-	fprintf(stdout, "\nai->ai_family: AF_INET, ai->ai_canonname: '%s'\n", ping->dest_ip);
+
+	flag_options_printing(ping, sockfd);
+
+	// NOTE: PING www.google.com (172.217.19.228): 56 data bytes, id 0xb6c9 = 46793
 	int yes = 1;
 
 	timeout.tv_sec = TIMEOUT;

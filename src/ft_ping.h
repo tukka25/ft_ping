@@ -21,7 +21,7 @@
 #include <sys/select.h>
 #include "./libft/libft.h"
 
-# define FLAG_OPTIONS_NUMBER 1
+# define FLAG_OPTIONS_NUMBER 2
 # define MAX_FLAG_SIZE 14
 # define TIMEOUT 4
 
@@ -59,4 +59,6 @@ int		ip_validation(char **av, t_ping *ping);
 void	packet_send(t_ping *ping);
 char	*convert_domain_to_ip(char *domain, t_ping *ping);
 float	get_mdev(t_ping *ping);
+void	flag_options_printing(t_ping *ping, int sockfd);
+
 #endif

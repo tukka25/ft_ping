@@ -7,9 +7,18 @@ void input_parsing(char **av, t_ping *ping)
 		error_handle(EXIT_FAILURE, "Invalid Parameters", ping);
 	if (flag_validation(av, ping) == 1)
 		error_handle(EXIT_FAILURE, "Invalid flag", ping);
+	if (ping->flag)
+	{
+		if (strcmp(ping->flag ,"-?") == 0)
+		{
+			print_usage();
+			error_handle(EXIT_SUCCESS, "", ping);
+		}
+	}
 	if (ip_validation(av, ping) == 1)
 		error_handle(EXIT_FAILURE, "Invalid IP Schema", ping);
 	printf("OPTION --------------> %s\n", ping->flag);
+	
 }
 
 /*
@@ -26,14 +35,21 @@ int flag_validation(char **av, t_ping *ping)
 	{
 		if (!*av[counter])
 			return 1;
-		if (ft_ispart(ping->flags_options, av[counter]) == 0)
+		if (strchr(av[counter], '-') != NULL)
 		{
-			ping->flag = ft_strdup(av[counter]);
-			return 0;
+			if (ft_ispart(ping->flags_options, av[counter]) == 0)
+			{
+				ping->flag = ft_strdup(av[counter]);
+				return 0;
+			}
+			else
+			{
+				return 1;
+			}
 		}
 		counter++;
 	}
-	return 1;
+	return 0;
 }
 
 /*
@@ -49,7 +65,12 @@ int ip_validation(char **av, t_ping *ping)
 	{
 		if (!*av[counter])
 			return 1;
-		if (strcmp(ping->flag, av[counter]))
+		if (!ping->flag)
+		{
+			ping->dest_ip = ft_strdup(av[counter]);
+			return 0;
+		}
+		else if (strcmp(ping->flag, av[counter]))
 		{
 			ping->dest_ip = ft_strdup(av[counter]);
 			return 0;

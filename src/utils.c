@@ -7,7 +7,7 @@ This function sets up the environment to run the program.
 */
 void setup(t_ping *ping)
 {
-	char *s[FLAG_OPTIONS_NUMBER + 1] = {"-v", NULL};
+	char *s[FLAG_OPTIONS_NUMBER + 1] = {"-v", "-?", NULL};
 
 	ft_bzero(ping, sizeof(t_ping));
 	ping->flags_options = ft_darray_copy(s);
@@ -21,11 +21,14 @@ This function prints the usage of the program
 void print_usage()
 {
 	printf("Usage:\n");
-    printf("  ./ft_ping [FLAG] [IP]\n\n");
+    printf("  ./ft_ping [FLAG] [IP/DOMAIN]\n\n");
     printf("Flags:\n");
     printf("  -v ===> Verbose mode\n\n");
+	printf("  -? ===> Help\n\n");
     printf("IP Format:\n");
     printf("  xxx.xxx.xxx.xxx\n");
+	printf("DOMAIN Format:\n");
+	printf("  www.example.com\n");
 }
 
 /*
@@ -106,4 +109,17 @@ char *convert_domain_to_ip(char *domain, t_ping *ping)
 		packet_failure(ping, error_msg);
 	}
     return inet_ntoa(*(struct in_addr *)h->h_addr);
+}
+
+void flag_options_printing(t_ping *ping, int sockfd)
+{
+	if (ping->flag)
+	{
+		if (strcmp(ping->flag, "-v") == 0)
+		{
+			fprintf(stdout, "ping: sock4.fd: %d (socktype: SOCK_RAW), hints.ai_family: AF_UNSPEC\n", sockfd);
+			fprintf(stdout, "\nai->ai_family: AF_INET, ai->ai_canonname: '%s'\n", ping->dest_ip);
+		}
+	}
+	
 }
