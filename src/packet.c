@@ -54,10 +54,10 @@ void packet_send(t_ping *ping)
 
 	// Change the packet size to include 56 bytes of data
 	size_t packet_size = sizeof(struct iphdr) + sizeof(struct icmphdr) + 56;  // 20 + 8 + 56 = 84 bytes
-	ping->packet = ft_calloc(1, packet_size);
+	ping->packet = ft_calloc(1, packet_size + 1);
 	if (!ping->packet)
 		packet_failure(ping, "Error: Failed to allocate memory for packet");
-	ping->buffer = ft_calloc(1, packet_size);
+	ping->buffer = ft_calloc(1, packet_size + 1);
 	if (!ping->buffer)
 		packet_failure(ping, "Error: Failed to allocate memory for buffer");
 	ip = (struct iphdr*)ping->packet;
