@@ -59,6 +59,6 @@ int		ip_validation(char **av, t_ping *ping);
 void	packet_send(t_ping *ping);
 char	*convert_domain_to_ip(char *domain, t_ping *ping);
 float	get_mdev(t_ping *ping);
-void	flag_options_printing(t_ping *ping, int sockfd);
+void	flag_options_printing(t_ping *ping, int pid);
 
 #endif

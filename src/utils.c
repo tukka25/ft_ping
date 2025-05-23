@@ -111,14 +111,14 @@ char *convert_domain_to_ip(char *domain, t_ping *ping)
     return inet_ntoa(*(struct in_addr *)h->h_addr);
 }
 
-void flag_options_printing(t_ping *ping, int sockfd)
+void flag_options_printing(t_ping *ping, int pid)
 {
 	if (ping->flag)
 	{
 		if (strcmp(ping->flag, "-v") == 0)
 		{
-			fprintf(stdout, "ping: sock4.fd: %d (socktype: SOCK_RAW), hints.ai_family: AF_UNSPEC\n", sockfd);
-			fprintf(stdout, "\nai->ai_family: AF_INET, ai->ai_canonname: '%s'\n", ping->dest_ip);
+			
+			fprintf(stdout, "\nPING %s (%s): 56 data bytes, id 0x%x = %d\n", ping->dest_ip, ping->ip_rep, pid,pid);
 		}
 	}
 	

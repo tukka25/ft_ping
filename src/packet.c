@@ -90,7 +90,7 @@ void packet_send(t_ping *ping)
 		exit(1);
 	}
 
-	flag_options_printing(ping, sockfd);
+	flag_options_printing(ping, icmp->un.echo.id);
 
 	// NOTE: PING www.google.com (172.217.19.228): 56 data bytes, id 0xb6c9 = 46793
 	int yes = 1;
