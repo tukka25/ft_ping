@@ -17,7 +17,10 @@ void input_parsing(char **av, t_ping *ping)
 	}
 	if (ip_validation(av, ping) == 1)
 		error_handle(EXIT_FAILURE, "Invalid IP Schema", ping);
-	printf("OPTION --------------> %s\n", ping->flag);
+	if (!ping->flag)
+		printf("OPTION --------------> No Flag\n");
+	else
+		printf("OPTION --------------> %s\n", ping->flag);
 	
 }
 
