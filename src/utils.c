@@ -123,3 +123,35 @@ void flag_options_printing(t_ping *ping, int pid)
 	}
 	
 }
+
+int packet_reply_printing(int type, int recv_f, struct iphdr* ip_reply, int seq, float elapsed_time)
+{
+	struct in_addr src_addr;
+	src_addr.s_addr = ip_reply->saddr;
+
+	if (type == 3)
+	{
+		printf("Destination Unreachable\n");
+		return 1;
+	}
+	else if (type == 5)
+	{
+		printf("Redirect\n");
+		return 1;
+	}
+	else if (type == 11)
+	{
+		printf("%ld bytes from %s: Time to live exceeded\n",  recv_f - sizeof(struct iphdr), inet_ntoa(src_addr));
+		return 1;
+	}
+	else if (type == 12)
+	{
+		printf("Parameter Problem\n");
+		return 1;
+	}
+	else
+	{
+		printf("%ld bytes from %s: icmp_seq=%d ttl=%d time=%.3lf ms\n",  recv_f - sizeof(struct iphdr), inet_ntoa(src_addr), seq, ip_reply->ttl, elapsed_time);
+		return 0;
+	}
+}

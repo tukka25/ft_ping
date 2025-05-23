@@ -57,7 +57,7 @@ void packet_send(t_ping *ping)
 	ping->packet = ft_calloc(1, packet_size);
 	if (!ping->packet)
 		packet_failure(ping, "Error: Failed to allocate memory for packet");
-	ping->buffer = ft_calloc(1, packet_size + 1);
+	ping->buffer = ft_calloc(1, packet_size);
 	if (!ping->buffer)
 		packet_failure(ping, "Error: Failed to allocate memory for buffer");
 	ip = (struct iphdr*)ping->packet;
@@ -112,7 +112,6 @@ void packet_send(t_ping *ping)
 	while (is_running)
 	{
 		gettimeofday(&start, NULL);
-		seq++;
 		int sendt = sendto(sockfd, ping->packet, packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
 
 		if (sendt > 0)
@@ -121,17 +120,19 @@ void packet_send(t_ping *ping)
 			int addr_len = sizeof(ping->sockadd);
 			int recv_f = recvfrom(sockfd, ping->buffer, packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
 			ip_reply = (struct iphdr*) ping->buffer;
+			struct icmphdr *icmp_reply = (struct icmphdr *)(ping->buffer + sizeof(struct iphdr));
 			gettimeofday(&stop, NULL);
 			if (recv_f > 0)
 			{
+				// struct in_addr src_addr;
+				// src_addr.s_addr = ip_reply->saddr;
 				float elapsed_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
 				ping->recieved_packets += 1;
-				printf("%ld bytes from %s: icmp seq=%d ttl=%d time=%.1lf\n",  recv_f - sizeof(struct iphdr), ping->ip_rep, seq, ip_reply->ttl, elapsed_time);
-				add_timing(elapsed_time, ping);
+				packet_reply_printing(icmp_reply->type, recv_f, ip_reply, seq, elapsed_time);
 			}
 		}
 		usleep(1000000);
-		
+		seq++;
 		icmp->un.echo.sequence = htons(seq);
 		icmp->checksum = 0;
 		icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
