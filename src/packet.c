@@ -85,10 +85,7 @@ void packet_send(t_ping *ping)
 	ping->sockadd.sin_addr.s_addr = inet_addr(ping->ip_rep);
 	int sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0)
-	{
-		printf("Error Initializing the Raw Socket\n");
-		exit(1);
-	}
+		packet_failure(ping, "Error: Failed to create raw socket");
 
 	flag_options_printing(ping, icmp->un.echo.id);
 
