@@ -14,7 +14,7 @@ SRCS =	src/main.c \
 		src/packet_utils2.c \
 		src/utils2.c
 
-CFLAGS = -Wall -Wextra -Werror -g3 
+CFLAGS = -Wall -Wextra -Werror 
 
 OBJS = $(SRCS:.c=.o)
 
