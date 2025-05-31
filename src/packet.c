@@ -2,75 +2,13 @@
 
 int is_running = 1;
 
-unsigned short calculate_checksum(unsigned short *icmp, int len)
-{
-	int sum = 0;
-	u_short *tmp_icmp = icmp;
-	uint16_t final = 0;
-	
-	while (len > 1)
-	{
-		sum += *tmp_icmp++;
-		len -= 2;
-	}
-	if (len != 0)
-		sum += *(uint8_t *)tmp_icmp;
-
-	while (sum >> 16)
-		sum = (sum & 0xffff) + (sum >> 16);
-	final = ~sum;
-	return final;
-}
-
-
-void handle_sigint(int sig)
-{ 
-	(void)sig;
-	is_running = 0;
-}
-
-void add_timing(float g, t_ping *ping)
-{
-	ping->timings = realloc(ping->timings, (ping->index * (size_t)sizeof(float)) + (size_t)sizeof(float));
-	ping->timings[ping->index] = g;
-	ping->index++;
-}
-
-void packet_failure(t_ping *ping, char *msg)
-{
-	free(ping->buffer);
-	free(ping->packet);
-	error_handle(EXIT_FAILURE, msg, ping);
-}
-
-static void ip_icmp_initialization(struct iphdr* ip, struct icmphdr* icmp, t_ping *ping, size_t packet_size)
-{
-	ip->version          = 4;
-	ip->tot_len          = packet_size;
-	ip->ttl          	= 64;
-	ip->protocol     = IPPROTO_ICMP;
-    ip->daddr            = inet_addr(ping->ip_rep);
-	ip->ihl 		= 5;
-
-	/** ICMP conf **/
-	icmp->type           = ICMP_ECHO;
-    icmp->code           = 0;
-    icmp->un.echo.id     = getpid();
-    icmp->un.echo.sequence   = htons(1);
-	icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
-
-}
-
 void packet_send(t_ping *ping)
 {
-
 	struct icmphdr* icmp;
 	struct iphdr* ip_reply;
 	struct iphdr* ip;
 	struct timeval timeout;
-	
 
-	// Change the packet size to include 56 bytes of data
 	size_t packet_size = sizeof(struct iphdr) + sizeof(struct icmphdr) + 56;  // 20 + 8 + 56 = 84 bytes
 	ping->packet = ft_calloc(1, packet_size + 1);
 	if (!ping->packet)
@@ -81,24 +19,10 @@ void packet_send(t_ping *ping)
 	ip = (struct iphdr*)ping->packet;
 	icmp = (struct icmphdr*)(ping->packet + sizeof(struct iphdr));
 	ping->ip_rep = convert_domain_to_ip(ping->dest_ip, ping);
-	/* IP conf */
 	struct timeval stop, start;
 	struct timeval stop_total, start_total;
 
 	ip_icmp_initialization(ip, icmp, ping, packet_size);
-	// ip->version          = 4;
-	// ip->tot_len          = packet_size;
-	// ip->ttl          	= 64;
-	// ip->protocol     = IPPROTO_ICMP;
-    // ip->daddr            = inet_addr(ping->ip_rep);
-	// ip->ihl 		= 5;
-
-	// /** ICMP conf **/
-	// icmp->type           = ICMP_ECHO;
-    // icmp->code           = 0;
-    // icmp->un.echo.id     = getpid();
-    // icmp->un.echo.sequence   = htons(1);
-	// icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
 
 	ping->sockadd.sin_family = AF_INET;
 	ping->sockadd.sin_port = 0;
@@ -108,11 +32,10 @@ void packet_send(t_ping *ping)
 		packet_failure(ping, "Error: Failed to create raw socket");
 
 	flag_options_printing(ping, icmp->un.echo.id);
-	int yes = 1;
 
 	timeout.tv_sec = TIMEOUT;
 	timeout.tv_usec = 0;
-	int sockOpt = setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &yes, sizeof(yes));
+	int sockOpt = setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &ping->yes, sizeof(ping->yes));
 	if (sockOpt < 0)
 	{
 		printf("Error setsockopt\n");
@@ -151,7 +74,12 @@ void packet_send(t_ping *ping)
 		icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
 	}
 	gettimeofday(&stop_total, NULL);
-	int total_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
+	final_printing_exit(&stop, &start, ping, sockfd);
+}
+
+void final_printing_exit(struct timeval *stop, struct timeval *start, t_ping *ping, int sockfd)
+{
+	int total_time = (((stop->tv_sec * 1000) + (stop->tv_usec / 1000)) - ((start->tv_sec * 1000) + (start->tv_usec / 1000)));
 	float loss_p = 100.0 - (((float)ping->recieved_packets / ping->transmitted_packets) * 100.0);
 
 	printf("\n--- %s ft_ping statistics ---\n", ping->dest_ip);
@@ -162,5 +90,4 @@ void packet_send(t_ping *ping)
 	free(ping->packet);
 	close(sockfd);
 	error_handle(EXIT_SUCCESS, "", ping);
-
 }
