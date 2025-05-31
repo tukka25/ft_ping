@@ -60,6 +60,7 @@ void	packet_send(t_ping *ping);
 char	*convert_domain_to_ip(char *domain, t_ping *ping);
 float	get_mdev(t_ping *ping);
 void	flag_options_printing(t_ping *ping, int pid);
-int		packet_reply_printing(int type, int recv_f, struct iphdr* ip_reply, int seq, float elapsed_time);
+void	packet_reply_printing(int type, int recv_f, struct iphdr* ip_reply, int seq, float elapsed_time, t_ping *ping);
+void	add_timing(float g, t_ping *ping);
 
 #endif

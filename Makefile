@@ -15,7 +15,7 @@ CFLAGS = -Wall -Wextra -Werror
 
 OBJS = $(SRCS:.c=.o)
 
-all: $(NAME) $(NAME)
+all: $(NAME) $(HEADERS)
 
 $(NAME): $(OBJS)
 	make -C src/libft/

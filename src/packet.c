@@ -43,6 +43,24 @@ void packet_failure(t_ping *ping, char *msg)
 	error_handle(EXIT_FAILURE, msg, ping);
 }
 
+static void ip_icmp_initialization(struct iphdr* ip, struct icmphdr* icmp, t_ping *ping, size_t packet_size)
+{
+	ip->version          = 4;
+	ip->tot_len          = packet_size;
+	ip->ttl          	= 64;
+	ip->protocol     = IPPROTO_ICMP;
+    ip->daddr            = inet_addr(ping->ip_rep);
+	ip->ihl 		= 5;
+
+	/** ICMP conf **/
+	icmp->type           = ICMP_ECHO;
+    icmp->code           = 0;
+    icmp->un.echo.id     = getpid();
+    icmp->un.echo.sequence   = htons(1);
+	icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
+
+}
+
 void packet_send(t_ping *ping)
 {
 
@@ -66,19 +84,21 @@ void packet_send(t_ping *ping)
 	/* IP conf */
 	struct timeval stop, start;
 	struct timeval stop_total, start_total;
-	ip->version          = 4;
-	ip->tot_len          = packet_size;
-	ip->ttl          	= 64;
-	ip->protocol     = IPPROTO_ICMP;
-    ip->daddr            = inet_addr(ping->ip_rep);
-	ip->ihl 		= 5;
 
-	/** ICMP conf **/
-	icmp->type           = ICMP_ECHO;
-    icmp->code           = 0;
-    icmp->un.echo.id     = getpid();
-    icmp->un.echo.sequence   = htons(1);
-	icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
+	ip_icmp_initialization(ip, icmp, ping, packet_size);
+	// ip->version          = 4;
+	// ip->tot_len          = packet_size;
+	// ip->ttl          	= 64;
+	// ip->protocol     = IPPROTO_ICMP;
+    // ip->daddr            = inet_addr(ping->ip_rep);
+	// ip->ihl 		= 5;
+
+	// /** ICMP conf **/
+	// icmp->type           = ICMP_ECHO;
+    // icmp->code           = 0;
+    // icmp->un.echo.id     = getpid();
+    // icmp->un.echo.sequence   = htons(1);
+	// icmp->checksum = calculate_checksum((unsigned short*)icmp, sizeof(struct icmphdr));
 
 	ping->sockadd.sin_family = AF_INET;
 	ping->sockadd.sin_port = 0;
@@ -88,8 +108,6 @@ void packet_send(t_ping *ping)
 		packet_failure(ping, "Error: Failed to create raw socket");
 
 	flag_options_printing(ping, icmp->un.echo.id);
-
-	// NOTE: PING www.google.com (172.217.19.228): 56 data bytes, id 0xb6c9 = 46793
 	int yes = 1;
 
 	timeout.tv_sec = TIMEOUT;
@@ -121,11 +139,9 @@ void packet_send(t_ping *ping)
 			gettimeofday(&stop, NULL);
 			if (recv_f > 0)
 			{
-				// struct in_addr src_addr;
-				// src_addr.s_addr = ip_reply->saddr;
 				float elapsed_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
 				ping->recieved_packets += 1;
-				packet_reply_printing(icmp_reply->type, recv_f, ip_reply, seq, elapsed_time);
+				packet_reply_printing(icmp_reply->type, recv_f, ip_reply, seq, elapsed_time, ping);
 			}
 		}
 		usleep(1000000);
