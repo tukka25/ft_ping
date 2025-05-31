@@ -37,6 +37,7 @@ typedef struct s_ping
 	char	*ip_rep;
 	char	*packet;
 	struct sockaddr_in sockadd;
+	size_t packet_size;
 	char	*buffer;
 	float	*timings;
 	int		index;
