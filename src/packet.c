@@ -32,51 +32,64 @@ static void init_packet_memory(t_ping *ping)
 	ping->ip_rep = convert_domain_to_ip(ping->dest_ip, ping);
 }
 
-void setting_options(t_ping *ping, int sockfd)
+void setting_options(t_ping *ping)
 {
-	int sockOpt = setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &ping->yes, sizeof(ping->yes));
+	struct timeval timeout;
+
+	timeout.tv_sec = TIMEOUT;
+	timeout.tv_usec = 0;
+	int sockOpt = setsockopt(ping->sockfd, IPPROTO_IP, IP_HDRINCL, &ping->yes, sizeof(ping->yes));
 	if (sockOpt < 0)
 	{
 		printf("Error setsockopt\n");
 		packet_failure(ping, "Error: Failed to set socket options");
 	}
-	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+	if (setsockopt (ping->sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                 sizeof timeout) < 0)
         packet_failure(ping, "Error: Failed to set socket options");
 }
 
-void packet_send(t_ping *ping)
+int	create_socket(t_ping *ping)
 {
-	struct timeval timeout;
-	struct timeval stop, start;
-	struct timeval stop_total, start_total;
-
-	init_packet_memory(ping);
-	ip_icmp_initialization(ping->ip, ping->icmp, ping, ping->packet_size);
-	
 	ping->sockadd.sin_family = AF_INET;
 	ping->sockadd.sin_port = 0;
 	ping->sockadd.sin_addr.s_addr = inet_addr(ping->ip_rep);
 	int sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0)
 		packet_failure(ping, "Error: Failed to create raw socket");
+	return sockfd;
+}
 
-	flag_options_printing(ping, ping->icmp->un.echo.id);
+void next_ping_setup(t_ping *ping)
+{
+	usleep(1000000);
+	ping->seq++;
+	ping->icmp->un.echo.sequence = htons(ping->seq);
+	ping->icmp->checksum = 0;
+	ping->icmp->checksum = calculate_checksum((unsigned short*)ping->icmp, sizeof(struct icmphdr));
+}
 
-	timeout.tv_sec = TIMEOUT;
-	timeout.tv_usec = 0;
-	setting_options(ping, sockfd);
+void packet_send(t_ping *ping)
+{
+	struct timeval stop, start;
+	struct timeval stop_total, start_total;
+
+	init_packet_memory(ping);
+	ip_icmp_initialization(ping->ip, ping->icmp, ping, ping->packet_size);
+	ping->sockfd = create_socket(ping);
+	flag_options_printing(ping);
+	setting_options(ping);
 	signal(SIGINT, handle_sigint);
 	gettimeofday(&start_total, NULL);
 	while (is_running)
 	{
 		gettimeofday(&start, NULL);
-		int sendt = sendto(sockfd, ping->packet, ping->packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
+		int sendt = sendto(ping->sockfd, ping->packet, ping->packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
 		if (sendt > 0)
 		{
 			ping->transmitted_packets += 1;
 			int addr_len = sizeof(ping->sockadd);
-			int recv_f = recvfrom(sockfd, ping->buffer, ping->packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
+			int recv_f = recvfrom(ping->sockfd, ping->buffer, ping->packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
 			ping->ip_reply = (struct iphdr*) ping->buffer;
 			struct icmphdr *icmp_reply = (struct icmphdr *)(ping->buffer + sizeof(struct iphdr));
 			gettimeofday(&stop, NULL);
@@ -84,15 +97,11 @@ void packet_send(t_ping *ping)
 			{
 				float elapsed_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
 				ping->recieved_packets += 1;
-				packet_reply_printing(icmp_reply->type, recv_f, ping->ip_reply, seq, elapsed_time, ping);
+				packet_reply_printing(icmp_reply->type, recv_f, ping->ip_reply, ping->seq, elapsed_time, ping);
 			}
 		}
-		usleep(1000000);
-		ping->seq++;
-		ping->icmp->un.echo.sequence = htons(ping->seq);
-		ping->icmp->checksum = 0;
-		ping->icmp->checksum = calculate_checksum((unsigned short*)ping->icmp, sizeof(struct icmphdr));
+		next_ping_setup(ping);
 	}
 	gettimeofday(&stop_total, NULL);
-	final_printing_exit(&stop, &start, ping, sockfd);
+	final_printing_exit(&stop, &start, ping, ping->sockfd);
 }

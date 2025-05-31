@@ -36,6 +36,7 @@ typedef struct s_ping
 	char	*dest_ip;
 	char	*ip_rep;
 	char	*packet;
+	int		sockfd;
 	int		seq;
 	struct icmphdr* icmp;
 	struct iphdr* ip_reply;
@@ -65,7 +66,7 @@ int		ip_validation(char **av, t_ping *ping);
 void	packet_send(t_ping *ping);
 char	*convert_domain_to_ip(char *domain, t_ping *ping);
 float	get_mdev(t_ping *ping);
-void	flag_options_printing(t_ping *ping, int pid);
+void	flag_options_printing(t_ping *ping);
 void	packet_reply_printing(int type, int recv_f, struct iphdr* ip_reply, int seq, float elapsed_time, t_ping *ping);
 void	add_timing(float g, t_ping *ping);
 void	final_printing_exit(struct timeval *stop, struct timeval *start, t_ping *ping, int sockfd);
