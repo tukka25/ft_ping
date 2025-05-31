@@ -96,4 +96,22 @@ void packet_send(t_ping *ping)
 	}
 	gettimeofday(&stop_total, NULL);
 	final_printing_exit(&stop, &start, ping, sockfd);
+<<<<<<< HEAD
+=======
+}
+
+void final_printing_exit(struct timeval *stop, struct timeval *start, t_ping *ping, int sockfd)
+{
+	int total_time = (((stop->tv_sec * 1000) + (stop->tv_usec / 1000)) - ((start->tv_sec * 1000) + (start->tv_usec / 1000)));
+	float loss_p = 100.0 - (((float)ping->recieved_packets / ping->transmitted_packets) * 100.0);
+
+	printf("\n--- %s ft_ping statistics ---\n", ping->dest_ip);
+	printf("%d packets transmitted, %d received, %0.4f%% packet loss, time %d ms\n", ping->transmitted_packets, ping->recieved_packets, loss_p, total_time);
+	printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms\n", get_minimum(ping), get_average(ping),get_maximum(ping), get_mdev(ping));
+	free(ping->timings);
+	free(ping->buffer);
+	free(ping->packet);
+	close(sockfd);
+	error_handle(EXIT_SUCCESS, "", ping);
+>>>>>>> bdf1fc2f05e8afe5bb6e405f206de0274fff276f
 }
