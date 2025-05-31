@@ -40,6 +40,7 @@ typedef struct s_ping
 	char	*buffer;
 	float	*timings;
 	int		index;
+	int		yes;
 	char	*flag;
 	int		transmitted_packets;
 	int		recieved_packets;
@@ -62,5 +63,11 @@ float	get_mdev(t_ping *ping);
 void	flag_options_printing(t_ping *ping, int pid);
 void	packet_reply_printing(int type, int recv_f, struct iphdr* ip_reply, int seq, float elapsed_time, t_ping *ping);
 void	add_timing(float g, t_ping *ping);
+void	final_printing_exit(struct timeval *stop, struct timeval *start, t_ping *ping, int sockfd);
+void	ip_icmp_initialization(struct iphdr* ip, struct icmphdr* icmp, t_ping *ping, size_t packet_size);
+void	packet_failure(t_ping *ping, char *msg);
+void	add_timing(float g, t_ping *ping);
+void	handle_sigint(int sig);
+unsigned short	calculate_checksum(unsigned short *icmp, int len);
 
 #endif

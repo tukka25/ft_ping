@@ -9,13 +9,14 @@ CC = cc
 SRCS =	src/main.c \
 		src/packet.c \
 		src/utils.c \
-		src/validation.c 
+		src/validation.c \
+		src/packet_utils.c 
 
 CFLAGS = -Wall -Wextra -Werror
 
 OBJS = $(SRCS:.c=.o)
 
-all: $(NAME) $(HEADERS)
+all: $(NAME)
 
 $(NAME): $(OBJS)
 	make -C src/libft/
