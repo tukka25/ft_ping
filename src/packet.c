@@ -32,6 +32,19 @@ static void init_packet_memory(t_ping *ping)
 	ping->ip_rep = convert_domain_to_ip(ping->dest_ip, ping);
 }
 
+void setting_options(t_ping *ping, int sockfd)
+{
+	int sockOpt = setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &ping->yes, sizeof(ping->yes));
+	if (sockOpt < 0)
+	{
+		printf("Error setsockopt\n");
+		packet_failure(ping, "Error: Failed to set socket options");
+	}
+	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+                sizeof timeout) < 0)
+        packet_failure(ping, "Error: Failed to set socket options");
+}
+
 void packet_send(t_ping *ping)
 {
 	struct timeval timeout;
@@ -52,23 +65,13 @@ void packet_send(t_ping *ping)
 
 	timeout.tv_sec = TIMEOUT;
 	timeout.tv_usec = 0;
-	int sockOpt = setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &ping->yes, sizeof(ping->yes));
-	if (sockOpt < 0)
-	{
-		printf("Error setsockopt\n");
-		packet_failure(ping, "Error: Failed to set socket options");
-	}
-	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
-                sizeof timeout) < 0)
-        packet_failure(ping, "Error: Failed to set socket options");
-	int seq = 0;
+	setting_options(ping, sockfd);
 	signal(SIGINT, handle_sigint);
 	gettimeofday(&start_total, NULL);
 	while (is_running)
 	{
 		gettimeofday(&start, NULL);
 		int sendt = sendto(sockfd, ping->packet, ping->packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
-
 		if (sendt > 0)
 		{
 			ping->transmitted_packets += 1;
@@ -85,8 +88,8 @@ void packet_send(t_ping *ping)
 			}
 		}
 		usleep(1000000);
-		seq++;
-		ping->icmp->un.echo.sequence = htons(seq);
+		ping->seq++;
+		ping->icmp->un.echo.sequence = htons(ping->seq);
 		ping->icmp->checksum = 0;
 		ping->icmp->checksum = calculate_checksum((unsigned short*)ping->icmp, sizeof(struct icmphdr));
 	}
