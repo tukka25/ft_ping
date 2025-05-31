@@ -10,9 +10,11 @@ SRCS =	src/main.c \
 		src/packet.c \
 		src/utils.c \
 		src/validation.c \
-		src/packet_utils.c 
+		src/packet_utils.c \
+		src/packet_utils2.c \
+		src/utils2.c
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g3 
 
 OBJS = $(SRCS:.c=.o)
 

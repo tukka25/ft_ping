@@ -1266,7 +1266,7 @@
    fun:main
 }
 {
-   <insert_a_suppression_name_here>
+   <dynamic linker>
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -1284,7 +1284,7 @@
    fun:_dl_catch_error
 }
 {
-   <insert_a_suppression_name_here>
+   <dynamic linker>
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:calloc
@@ -1302,7 +1302,7 @@
    fun:__libc_dlopen_mode
 }
 {
-   <insert_a_suppression_name_here>
+   <dynamic linker>
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:calloc
@@ -1320,7 +1320,7 @@
    fun:_dl_catch_error
 }
 {
-   <insert_a_suppression_name_here>
+   <dynamic linker>
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
