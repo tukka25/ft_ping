@@ -1,98 +1,88 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   packet.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abdamoha42 <abdamoha42@student.42.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/31 11:26:53 by abdamoha42        #+#    #+#             */
+/*   Updated: 2025/05/31 12:23:50 by abdamoha42       ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_ping.h"
 
-int is_running = 1;
+int			g_is_running = 1;
 
-
-void final_printing_exit(struct timeval *stop, struct timeval *start, t_ping *ping, int sockfd)
+int	create_socket(t_ping *ping)
 {
-	int total_time = (((stop->tv_sec * 1000) + (stop->tv_usec / 1000)) - ((start->tv_sec * 1000) + (start->tv_usec / 1000)));
-	float loss_p = 100.0 - (((float)ping->recieved_packets / ping->transmitted_packets) * 100.0);
+	int	sockfd;
 
-	printf("\n--- %s ft_ping statistics ---\n", ping->dest_ip);
-	printf("%d packets transmitted, %d received, %0.4f%% packet loss, time %d ms\n", ping->transmitted_packets, ping->recieved_packets, loss_p, total_time);
-	printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms\n", get_minimum(ping), get_average(ping),get_maximum(ping), get_mdev(ping));
-	free(ping->timings);
-	free(ping->buffer);
-	free(ping->packet);
-	close(sockfd);
-	error_handle(EXIT_SUCCESS, "", ping);
-}
-
-static void init_packet_memory(t_ping *ping)
-{
-	ping->packet_size = sizeof(struct iphdr) + sizeof(struct icmphdr) + 56;
-	ping->packet = ft_calloc(1, ping->packet_size + 1);
-	if (!ping->packet)
-		packet_failure(ping, "Error: Failed to allocate memory for packet");
-	ping->buffer = ft_calloc(1, ping->packet_size + 1);
-	if (!ping->buffer)
-		packet_failure(ping, "Error: Failed to allocate memory for buffer");
-	ping->ip = (struct iphdr*)ping->packet;
-	ping->icmp = (struct icmphdr*)(ping->packet + sizeof(struct iphdr));
-	ping->ip_rep = convert_domain_to_ip(ping->dest_ip, ping);
-}
-
-void setting_options(t_ping *ping, int sockfd)
-{
-	int sockOpt = setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &ping->yes, sizeof(ping->yes));
-	if (sockOpt < 0)
-	{
-		printf("Error setsockopt\n");
-		packet_failure(ping, "Error: Failed to set socket options");
-	}
-	if (setsockopt (sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
-                sizeof timeout) < 0)
-        packet_failure(ping, "Error: Failed to set socket options");
-}
-
-void packet_send(t_ping *ping)
-{
-	struct timeval timeout;
-	struct timeval stop, start;
-	struct timeval stop_total, start_total;
-
-	init_packet_memory(ping);
-	ip_icmp_initialization(ping->ip, ping->icmp, ping, ping->packet_size);
-	
 	ping->sockadd.sin_family = AF_INET;
 	ping->sockadd.sin_port = 0;
 	ping->sockadd.sin_addr.s_addr = inet_addr(ping->ip_rep);
-	int sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
+	sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0)
 		packet_failure(ping, "Error: Failed to create raw socket");
+	return (sockfd);
+}
 
-	flag_options_printing(ping, ping->icmp->un.echo.id);
+void	next_ping_setup(t_ping *ping)
+{
+	usleep(1000000);
+	ping->seq++;
+	ping->icmp->un.echo.sequence = htons(ping->seq);
+	ping->icmp->checksum = 0;
+	ping->icmp->checksum = calculate_checksum((unsigned short *)ping->icmp,
+			sizeof(struct icmphdr));
+}
 
-	timeout.tv_sec = TIMEOUT;
-	timeout.tv_usec = 0;
-	setting_options(ping, sockfd);
+static void	init_packet_send(t_ping *ping, t_packet *packet)
+{
+	init_packet_memory(ping);
+	ip_icmp_initialization(ping->ip, ping->icmp, ping, ping->packet_size);
+	ping->sockfd = create_socket(ping);
+	flag_options_printing(ping);
+	setting_options(ping);
 	signal(SIGINT, handle_sigint);
-	gettimeofday(&start_total, NULL);
-	while (is_running)
+	gettimeofday(&packet->start_total, NULL);
+}
+
+static void	handle_send(t_ping *ping, t_packet *packet)
+{
+	ping->transmitted_packets += 1;
+	ping->addr_len = sizeof(ping->sockadd);
+	ping->recv_f = recvfrom(ping->sockfd, ping->buffer, ping->packet_size, 0,
+			(struct sockaddr *)&ping->sockadd,
+			(unsigned int *restrict) & ping->addr_len);
+	ping->ip_reply = (struct iphdr *)ping->buffer;
+	ping->icmp_reply = (struct icmphdr *)(ping->buffer + sizeof(struct iphdr));
+	gettimeofday(&packet->stop, NULL);
+	if (ping->recv_f > 0)
 	{
-		gettimeofday(&start, NULL);
-		int sendt = sendto(sockfd, ping->packet, ping->packet_size, 0, (struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
-		if (sendt > 0)
-		{
-			ping->transmitted_packets += 1;
-			int addr_len = sizeof(ping->sockadd);
-			int recv_f = recvfrom(sockfd, ping->buffer, ping->packet_size, 0, (struct sockaddr *)&ping->sockadd, (unsigned int * restrict)&addr_len);
-			ping->ip_reply = (struct iphdr*) ping->buffer;
-			struct icmphdr *icmp_reply = (struct icmphdr *)(ping->buffer + sizeof(struct iphdr));
-			gettimeofday(&stop, NULL);
-			if (recv_f > 0)
-			{
-				float elapsed_time = (((stop.tv_sec * 1000) + (stop.tv_usec / 1000)) - ((start.tv_sec * 1000) + (start.tv_usec / 1000)));
-				ping->recieved_packets += 1;
-				packet_reply_printing(icmp_reply->type, recv_f, ping->ip_reply, seq, elapsed_time, ping);
-			}
-		}
-		usleep(1000000);
-		ping->seq++;
-		ping->icmp->un.echo.sequence = htons(ping->seq);
-		ping->icmp->checksum = 0;
-		ping->icmp->checksum = calculate_checksum((unsigned short*)ping->icmp, sizeof(struct icmphdr));
+		ping->elapsed_time = (((packet->stop.tv_sec * 1000)
+					+ (packet->stop.tv_usec / 1000)) - ((packet->start.tv_sec
+						* 1000) + (packet->start.tv_usec / 1000)));
+		ping->recieved_packets += 1;
+		packet_reply_printing(ping->icmp_reply->type, ping->recv_f,
+			ping->elapsed_time, ping);
 	}
-	gettimeofday(&stop_total, NULL);
-	final_printing_exit(&stop, &start, ping, sockfd);
+}
+
+void	packet_send(t_ping *ping)
+{
+	t_packet	packet;
+
+	init_packet_send(ping, &packet);
+	while (g_is_running)
+	{
+		gettimeofday(&packet.start, NULL);
+		ping->sendt = sendto(ping->sockfd, ping->packet, ping->packet_size, 0,
+				(struct sockaddr *)&ping->sockadd, sizeof(struct sockaddr));
+		if (ping->sendt > 0)
+			handle_send(ping, &packet);
+		next_ping_setup(ping);
+	}
+	gettimeofday(&packet.stop_total, NULL);
+	final_printing_exit(&packet.stop, &packet.start, ping, ping->sockfd);
 }

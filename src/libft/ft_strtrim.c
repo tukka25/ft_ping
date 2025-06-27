@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strtrim.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abdamoha <abdamoha@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abdamoha42 <abdamoha42@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 14:53:09 by abdamoha          #+#    #+#             */
-/*   Updated: 2022/10/20 20:03:31 by abdamoha         ###   ########.fr       */
+/*   Updated: 2025/05/31 14:03:53 by abdamoha42       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ static int	check_begining(char const *s1, char const *set)
 	while (s1[i] != '\0')
 	{
 		if (checker(set, s1[i]) == 1)
-				count2++;
+			count2++;
 		else if (checker(set, s1[i]) == 0)
 			return (count2);
 		i++;
@@ -54,7 +54,7 @@ static int	check_end(char const *s1, char const *set)
 	while (i > 0)
 	{
 		if (checker(set, s1[i]) == 1)
-				count1++;
+			count1++;
 		else if (checker(set, s1[i]) == 0)
 			return (count1);
 		i--;
