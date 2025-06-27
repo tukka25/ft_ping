@@ -218,20 +218,3 @@ src/libft/libft.a
 ### Debug Mode
 
 Use the verbose flag (`-v`) for detailed packet analysis and debugging information.
-
-## 📝 License
-
-This project is part of the 42 School curriculum. Please refer to your institution's academic integrity policies.
-
-## 🤝 Contributing
-
-This is an educational project. If you're working on a similar assignment:
-
-1. Use this as reference, not a direct copy
-2. Understand the underlying concepts
-3. Implement your own solution
-4. Follow your institution's academic policies
-
----
-
-**Note**: This implementation is for educational purposes and may not include all features of the standard `ping` utility. Always use official network tools for production environments. 
