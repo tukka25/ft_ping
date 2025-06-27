@@ -1,6 +1,4 @@
 # include "ft_ping.h"
-#include "libft/libft.h"
-
 
 /*
 This function sets up the environment to run the program.
